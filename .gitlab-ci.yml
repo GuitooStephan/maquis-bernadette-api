@@ -1,0 +1,29 @@
+stages:
+  - test
+
+variables:
+  POSTGRES_DB: "maquisbernadette"
+  POSTGRES_HOST_AUTH_METHOD: trust
+  GIT_STRATEGY: clone
+
+default:
+  image: python:3.6.8
+
+  services:
+    - name: postgres:latest
+      alias: db
+    - name: redis:alpine
+      alias: redis
+
+  before_script:
+    - python --version
+    - pip --version
+    - pip install -r requirements.txt
+    - python manage.py makemigrations
+    - python manage.py migrate
+
+test:
+  stage: test
+
+  script:
+    - ./run_tests.sh
