@@ -1,0 +1,40 @@
+version: "3"
+
+services:
+    db:
+        restart: always
+        image: postgres:latest
+        ports:
+            - "5432"
+        environment:
+            POSTGRES_DB: maquisbernadette
+    redis:
+        image: "redis:alpine"
+        ports:
+            - "6379:6379"
+    web:
+        build: .
+        command: python3 manage.py runserver 0.0.0.0:1700
+        volumes:
+            - .:/app
+        ports:
+            - "1700:1700"
+        env_file: .env
+        links:
+            - db
+        environment:
+            - DB_HOST=db
+            - DB_PORT=5432
+            - DATABASE=maquisbernadette
+        depends_on:
+            - db
+    celery:
+        build: .
+        command: ./manage.py runworker
+        volumes:
+            - .:/app
+        env_file:
+            - .env
+        depends_on:
+            - redis
+            - db
